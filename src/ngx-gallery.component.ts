@@ -1,5 +1,5 @@
 import { Component, Input, HostListener, ViewChild, OnInit,
-    HostBinding, DoCheck, ElementRef, AfterViewInit, Output, EventEmitter } from '@angular/core';
+    HostBinding, DoCheck, ElementRef, AfterViewInit, Output, EventEmitter, ComponentRef } from '@angular/core';
 import { SafeResourceUrl } from '@angular/platform-browser';
 
 import { NgxGalleryPreviewComponent } from './ngx-gallery-preview.component';
@@ -20,7 +20,44 @@ import { NgxGalleryOrderedImage } from './ngx-gallery-ordered-image.model';
 
         <ngx-gallery-thumbnails *ngIf="currentOptions?.thumbnails" [style.marginTop]="getThumbnailsMarginTop()" [style.marginBottom]="getThumbnailsMarginBottom()" [style.height]="getThumbnailsHeight()" [images]="smallImages" [links]="currentOptions?.thumbnailsAsLinks ? links : []" [labels]="labels" [linkTarget]="currentOptions?.linkTarget" [selectedIndex]="selectedIndex" [columns]="currentOptions?.thumbnailsColumns" [rows]="currentOptions?.thumbnailsRows" [margin]="currentOptions?.thumbnailMargin" [arrows]="currentOptions?.thumbnailsArrows" [arrowsAutoHide]="currentOptions?.thumbnailsArrowsAutoHide" [arrowPrevIcon]="currentOptions?.arrowPrevIcon" [arrowNextIcon]="currentOptions?.arrowNextIcon" [clickable]="currentOptions?.image || currentOptions?.preview" [swipe]="currentOptions?.thumbnailsSwipe" [size]="currentOptions?.thumbnailSize" [moveSize]="currentOptions?.thumbnailsMoveSize" [order]="currentOptions?.thumbnailsOrder" [remainingCount]="currentOptions?.thumbnailsRemainingCount" [lazyLoading]="currentOptions?.lazyLoading" [actions]="currentOptions?.thumbnailActions"  (onActiveChange)="selectFromThumbnails($event)"></ngx-gallery-thumbnails>
 
-        <ngx-gallery-preview [images]="bigImages" [descriptions]="descriptions" [showDescription]="currentOptions?.previewDescription" [arrowPrevIcon]="currentOptions?.arrowPrevIcon" [arrowNextIcon]="currentOptions?.arrowNextIcon" [closeIcon]="currentOptions?.closeIcon" [fullscreenIcon]="currentOptions?.fullscreenIcon" [spinnerIcon]="currentOptions?.spinnerIcon" [arrows]="currentOptions?.previewArrows" [arrowsAutoHide]="currentOptions?.previewArrowsAutoHide" [swipe]="currentOptions?.previewSwipe" [fullscreen]="currentOptions?.previewFullscreen" [forceFullscreen]="currentOptions?.previewForceFullscreen" [closeOnClick]="currentOptions?.previewCloseOnClick" [closeOnEsc]="currentOptions?.previewCloseOnEsc" [keyboardNavigation]="currentOptions?.previewKeyboardNavigation" [animation]="currentOptions?.previewAnimation" [autoPlay]="currentOptions?.previewAutoPlay" [autoPlayInterval]="currentOptions?.previewAutoPlayInterval" [autoPlayPauseOnHover]="currentOptions?.previewAutoPlayPauseOnHover" [infinityMove]="currentOptions?.previewInfinityMove" [zoom]="currentOptions?.previewZoom" [zoomStep]="currentOptions?.previewZoomStep" [zoomMax]="currentOptions?.previewZoomMax" [zoomMin]="currentOptions?.previewZoomMin" [zoomInIcon]="currentOptions?.zoomInIcon" [zoomOutIcon]="currentOptions?.zoomOutIcon" [actions]="currentOptions?.actions" [rotate]="currentOptions?.previewRotate" [rotateLeftIcon]="currentOptions?.rotateLeftIcon" [rotateRightIcon]="currentOptions?.rotateRightIcon" [download]="currentOptions?.previewDownload" [downloadIcon]="currentOptions?.downloadIcon" [bullets]="currentOptions?.previewBullets" (onClose)="onPreviewClose()" (onOpen)="onPreviewOpen()" (onActiveChange)="previewSelect($event)" [class.ngx-gallery-active]="previewEnabled"></ngx-gallery-preview>
+        <!--<ngx-gallery-preview [images]="bigImages"
+                             [descriptions]="descriptions"
+                             [showDescription]="currentOptions?.previewDescription"
+                             [arrowPrevIcon]="currentOptions?.arrowPrevIcon"
+                             [arrowNextIcon]="currentOptions?.arrowNextIcon"
+                             [closeIcon]="currentOptions?.closeIcon"
+                             [fullscreenIcon]="currentOptions?.fullscreenIcon"
+                             [spinnerIcon]="currentOptions?.spinnerIcon"
+                             [arrows]="currentOptions?.previewArrows"
+                             [arrowsAutoHide]="currentOptions?.previewArrowsAutoHide"
+                             [swipe]="currentOptions?.previewSwipe"
+                             [fullscreen]="currentOptions?.previewFullscreen"
+                             [forceFullscreen]="currentOptions?.previewForceFullscreen"
+                             [closeOnClick]="currentOptions?.previewCloseOnClick"
+                             [closeOnEsc]="currentOptions?.previewCloseOnEsc"
+                             [keyboardNavigation]="currentOptions?.previewKeyboardNavigation"
+                             [animation]="currentOptions?.previewAnimation"
+                             [autoPlay]="currentOptions?.previewAutoPlay"
+                             [autoPlayInterval]="currentOptions?.previewAutoPlayInterval"
+                             [autoPlayPauseOnHover]="currentOptions?.previewAutoPlayPauseOnHover"
+                             [infinityMove]="currentOptions?.previewInfinityMove"
+                             [zoom]="currentOptions?.previewZoom"
+                             [zoomStep]="currentOptions?.previewZoomStep"
+                             [zoomMax]="currentOptions?.previewZoomMax"
+                             [zoomMin]="currentOptions?.previewZoomMin"
+                             [zoomInIcon]="currentOptions?.zoomInIcon"
+                             [zoomOutIcon]="currentOptions?.zoomOutIcon"
+                             [actions]="currentOptions?.actions"
+                             [rotate]="currentOptions?.previewRotate"
+                             [rotateLeftIcon]="currentOptions?.rotateLeftIcon"
+                             [rotateRightIcon]="currentOptions?.rotateRightIcon"
+                             [download]="currentOptions?.previewDownload"
+                             [downloadIcon]="currentOptions?.downloadIcon"
+                             [bullets]="currentOptions?.previewBullets"
+                             (onClose)="onPreviewClose()"
+                             (onOpen)="onPreviewOpen()"
+                             (onActiveChange)="previewSelect($event)"
+                             [class.ngx-gallery-active]="previewEnabled"></ngx-gallery-preview>-->
     </div>
     `,
     styleUrls: ['./ngx-gallery.component.scss'],
@@ -55,7 +92,8 @@ export class NgxGalleryComponent implements OnInit, DoCheck, AfterViewInit   {
     private prevBreakpoint: number | undefined = undefined;
     private fullWidthTimeout: any;
 
-    @ViewChild(NgxGalleryPreviewComponent, { static: true }) preview: NgxGalleryPreviewComponent;
+    private previewRef: ComponentRef<NgxGalleryPreviewComponent>;
+    /*@ViewChild(NgxGalleryPreviewComponent, { static: true }) preview: NgxGalleryPreviewComponent;*/
     @ViewChild(NgxGalleryImageComponent, { static: true }) image: NgxGalleryImageComponent;
     @ViewChild(NgxGalleryThumbnailsComponent, { static: true }) thubmnails: NgxGalleryThumbnailsComponent;
 
@@ -63,7 +101,7 @@ export class NgxGalleryComponent implements OnInit, DoCheck, AfterViewInit   {
     @HostBinding('style.height') height: string;
     @HostBinding('style.left') left: string;
 
-    constructor(private myElement: ElementRef) {}
+    constructor(private myElement: ElementRef, private helperService: NgxGalleryHelperService) {}
 
     ngOnInit() {
         this.options = this.options.map((opt) => new NgxGalleryOptions(opt));
@@ -161,7 +199,50 @@ export class NgxGalleryComponent implements OnInit, DoCheck, AfterViewInit   {
             this.currentOptions.previewCustom(index);
         } else {
             this.previewEnabled = true;
-            this.preview.open(index);
+            //this.preview.open(index);
+            const previewConfig = {
+                'images': this.bigImages,
+                'descriptions': this.descriptions,
+                'showDescription': this.currentOptions.previewDescription,
+                'arrowPrevIcon': this.currentOptions.arrowPrevIcon,
+                'arrowNextIcon': this.currentOptions.arrowNextIcon,
+                'closeIcon': this.currentOptions.closeIcon,
+                'fullscreenIcon': this.currentOptions.fullscreenIcon,
+                'spinnerIcon': this.currentOptions.spinnerIcon,
+                'arrows': this.currentOptions.previewArrows,
+                'arrowsAutoHide': this.currentOptions.previewArrowsAutoHide,
+                'swipe': this.currentOptions.previewSwipe,
+                'fullscreen': this.currentOptions.previewFullscreen,
+                'forceFullscreen': this.currentOptions.previewForceFullscreen,
+                'closeOnClick': this.currentOptions.previewCloseOnClick,
+                'closeOnEsc': this.currentOptions.previewCloseOnEsc,
+                'keyboardNavigation': this.currentOptions.previewKeyboardNavigation,
+                'animation': this.currentOptions.previewAnimation,
+                'autoPlay': this.currentOptions.previewAutoPlay,
+                'autoPlayInterval': this.currentOptions.previewAutoPlayInterval,
+                'autoPlayPauseOnHover': this.currentOptions.previewAutoPlayPauseOnHover,
+                'infinityMove': this.currentOptions.previewInfinityMove,
+                'zoom': this.currentOptions.previewZoom,
+                'zoomStep': this.currentOptions.previewZoomStep,
+                'zoomMax': this.currentOptions.previewZoomMax,
+                'zoomMin': this.currentOptions.previewZoomMin,
+                'zoomInIcon': this.currentOptions.zoomInIcon,
+                'zoomOutIcon': this.currentOptions.zoomOutIcon,
+                'actions': this.currentOptions.actions,
+                'rotate': this.currentOptions.previewRotate,
+                'rotateLeftIcon': this.currentOptions.rotateLeftIcon,
+                'rotateRightIcon': this.currentOptions.rotateRightIcon,
+                'download': this.currentOptions.previewDownload,
+                'downloadIcon': this.currentOptions.downloadIcon,
+                'bullets': this.currentOptions.previewBullets,
+                'onClose': ($event) => this.onPreviewClose(),
+                'onOpen': ($event) => this.onPreviewOpen(),
+                'onActiveChange': ($event) => this.previewSelect($event),
+                /*[class.ngx-gallery-active]="previewEnabled"*/
+            };
+
+            this.previewRef = this.helperService.appendPreviewToBody(NgxGalleryPreviewComponent, previewConfig);
+            this.previewRef.instance.open(index);
         }
     }
 
@@ -177,6 +258,10 @@ export class NgxGalleryComponent implements OnInit, DoCheck, AfterViewInit   {
         this.previewEnabled = false;
         this.previewClose.emit();
 
+        if(this.previewRef) {
+            this.helperService.destroyPreview(this.previewRef);
+            this.previewRef = null;
+        }
         if (this.image && this.image.autoPlay) {
             this.image.startAutoPlay();
         }

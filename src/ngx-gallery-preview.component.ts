@@ -33,7 +33,10 @@ import { NgxGalleryHelperService } from './ngx-gallery-helper.service';
             <div class="ngx-gallery-preview-text" *ngIf="showDescription && description" [innerHTML]="description" (click)="$event.stopPropagation()"></div>
         </div>
     `,
-    styleUrls: ['./ngx-gallery-preview.component.scss']
+    styleUrls: ['./ngx-gallery-preview.component.scss'],
+    host: {
+        '[class.ngx-gallery-active]': 'true'
+    }
 })
 export class NgxGalleryPreviewComponent implements OnInit, OnChanges {
 
